@@ -1,126 +1,86 @@
-import streamlit as st
-from mqtt_client import seat_data
-import paho.mqtt.client as mqtt
-import json
-import sqlite3
-import logging
+# app.py
+import eventlet
+eventlet.monkey_patch()
 
-# Initialize logging for error handling and debugging
-logging.basicConfig(level=logging.INFO)
+from flask import Flask, render_template
+from flask_socketio import SocketIO
+from flask_mqtt import Mqtt
 
-# Global variable to store total passenger count
-total_passengers = 0
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key'
 
-# MQTT broker settings
-mqtt_broker = "test.mosquitto.org"
-mqtt_topic = "rfid/totalTags"
+# MQTT configuration
+app.config['MQTT_BROKER_URL'] = 'test.mosquitto.org'
+app.config['MQTT_BROKER_PORT'] = 1883
+app.config['MQTT_KEEPALIVE'] = 60
+app.config['MQTT_TLS_ENABLED'] = False
 
-# Load seat data from SQLite on startup for continuity
-def load_seat_data_from_db():
-    conn = sqlite3.connect('bus_seat_log.db')
-    c = conn.cursor()
-    c.execute("SELECT bus, seat_id, status FROM seat_logs ORDER BY timestamp DESC")
-    rows = c.fetchall()
-    seat_data = {}
-    for bus, seat_id, status in rows:
-        if bus not in seat_data:
-            seat_data[bus] = {}
-        seat_data[bus][seat_id] = status
-    conn.close()
-    return seat_data
+# Initialize Flask extensions
+socketio = SocketIO(app)
+mqtt = Mqtt(app)
 
-seat_data = load_seat_data_from_db()
+# Initialize seat and passenger data
+seats = {}
+passenger_count = 0
 
-# MQTT message processing callback
-def on_message(client, userdata, msg):
-    global total_passengers
-    try:
-        total_passengers = int(msg.payload.decode())
-        st.session_state['total_passengers'] = total_passengers
-    except ValueError:
-        logging.error("Error decoding MQTT message")
-
-# MQTT client setup with error handling
-try:
-    mqtt_client = mqtt.Client()
-    mqtt_client.on_message = on_message
-    mqtt_client.connect(mqtt_broker, 1883, 60)
-    mqtt_client.subscribe(mqtt_topic)
-    mqtt_client.loop_start()
-except Exception as e:
-    st.error(f"Failed to connect to MQTT broker: {e}")
-
-# Streamlit app layout setup
-st.set_page_config(page_title="Bus Seat and Passenger Tracker", layout="wide")
-
-# Sidebar navigation
-page = st.sidebar.selectbox("Navigate", ["Home", "Select Bus", "Seat Availability", "Passenger Count"])
-
-# Custom CSS for seat display themes
-st.markdown("""
-    <style>
-    .stApp { background-color: #E6F0FA; }
-    .seat-block {
-        padding: 15px;
-        margin: 5px;
-        color: white;
-        font-size: 18px;
-        text-align: center;
-        border-radius: 8px;
-        width: 100px;
-        min-width: 90px;
+def initialize_seats(num_seats):
+    global seats
+    seats = {
+        f"seat{i}": {
+            "status": "Kursi Kosong",
+            "classification": "N/A"
+        }
+        for i in range(1, num_seats + 1)
     }
-    .seat-available { background-color: #32CD32; }
-    .seat-occupied { background-color: #FF4500; }
-    .seat-child { background-color: #FFD700; color: black; }
-    .seat-item { background-color: #8A2BE2; }
-    </style>
-""", unsafe_allow_html=True)
 
-# Page definitions
-def show_home():
-    st.title("🚍 Welcome to the Bus Seat and Passenger Tracker")
-    st.write("Monitor real-time seat availability and total passenger count.")
+initialize_seats(10)  # Set the number of seats
 
-def show_bus_selection():
-    st.title("Select a Bus")
-    if seat_data:
-        bus_list = list(seat_data.keys())
-        selected_bus = st.selectbox("Choose a Bus", bus_list)
-        st.session_state["selected_bus"] = selected_bus
+@mqtt.on_connect()
+def handle_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected to MQTT broker")
+        mqtt.subscribe("sensor/seat1/status")
+        mqtt.subscribe("sensor/seat1/klasifikasi")
+        mqtt.subscribe("sensor/seat2/status")
+        mqtt.subscribe("sensor/seat2/klasifikasi")
+        mqtt.subscribe("rfid/totalTags")
     else:
-        st.write("No bus data available yet. Please wait...")
+        print("Failed to connect, return code", rc)
 
-def show_seat_availability():
-    st.title("Seat Availability")
-    if "selected_bus" in st.session_state:
-        selected_bus = st.session_state["selected_bus"]
-        st.write(f"Viewing seat availability for Bus: {selected_bus}")
-        seats = seat_data.get(selected_bus, {})
-        if seats:
-            cols = st.columns(4)
-            for i, (seat_id, status) in enumerate(seats.items()):
-                css_class = f"seat-{status}"
-                cols[i % 4].markdown(f"<div class='seat-block {css_class}'>Seat {seat_id}</div>", unsafe_allow_html=True)
-        else:
-            st.write("No seat data available for this bus.")
-    else:
-        st.write("Please select a bus first.")
+@mqtt.on_message()
+def handle_mqtt_message(client, userdata, message):
+    global seats, passenger_count
+    topic = message.topic
+    payload = message.payload.decode()
 
-def show_passenger_count():
-    st.title("Total Passengers")
-    st.write("Total number of passengers on the bus based on RFID tags.")
-    if "total_passengers" in st.session_state:
-        st.write(f"Total Passengers: {st.session_state['total_passengers']}")
-    else:
-        st.write("Waiting for passenger data...")
+    # Process seat status and classification
+    if "sensor/seat" in topic:
+        seat_name = topic.split("/")[1]
+        if "status" in topic:
+            seats[seat_name]["status"] = payload
+        elif "klasifikasi" in topic:
+            seats[seat_name]["classification"] = payload
+    elif topic == "rfid/totalTags":
+        passenger_count = int(payload)
 
-# Render selected page
-if page == "Home":
-    show_home()
-elif page == "Select Bus":
-    show_bus_selection()
-elif page == "Seat Availability":
-    show_seat_availability()
-elif page == "Passenger Count":
-    show_passenger_count()
+    # Emit updated data to all connected WebSocket clients
+    socketio.emit('update_data', {'seats': seats, 'passenger_count': passenger_count})
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/seat_availability')
+def seat_availability():
+    return render_template('seat_availability.html', seats=seats, passenger_count=passenger_count)
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+if __name__ == "__main__":
+    socketio.run(app, debug=True)
