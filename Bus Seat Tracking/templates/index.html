@@ -1,0 +1,124 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-seat Tracker - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Page Styling */
+        body {
+            background-color: #f9fafc;
+            color: #001f3f;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: white;
+            border-bottom: 1px solid #eaeaea;
+            padding: 1rem 2rem;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #001f3f !important;
+        }
+        .navbar .nav-link {
+            color: #001f3f !important;
+            margin: 0 1rem;
+            font-weight: 500;
+        }
+        .navbar .nav-link:hover {
+            color: #007bff !important;
+        }
+        .navbar .navbar-brand img {
+            margin-right: 0.5rem;
+        }
+
+        /* Header Section */
+        .header-section {
+            text-align: center;
+            padding: 4rem 1rem;
+        }
+        .header-section h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #001f3f;
+        }
+        .header-section h2 {
+            font-size: 1.25rem;
+            font-weight: 300;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        /* Circular Image with Overlay */
+        .image-container {
+            position: relative;
+            display: inline-block;
+        }
+        .image-container img {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 8px solid #ffc107;
+        }
+        .circle-overlay {
+            position: absolute;
+            border-radius: 50%;
+        }
+        .circle-overlay.yellow {
+            background-color: #ffc107;
+            width: 80px;
+            height: 80px;
+            bottom: -10px;
+            left: -40px;
+        }
+        .circle-overlay.blue {
+            background-color: #001f3f;
+            width: 100px;
+            height: 100px;
+            top: -20px;
+            right: -50px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="/">
+            <img src="/static/logo.png" alt="Logo" style="width: 150px; height: 75px;">
+            E-seat Tracker
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="/seat_availability">Seat Monitoring</a></li>
+                <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <div class="header-section">
+        <h1>WELCOME TO</h1>
+        <h2><strong>E-SEAT TRACKER</strong></h2>
+        <p>Sistem Pemantauan Kapasitas Kursi Penumpang Pada Transportasi Umum Berbasis Internet of Things</p>
+        
+        <!-- Circular Image with Overlay -->
+        <div class="image-container mt-4">
+            <img src="/static/bus_image.png" alt="Bus Interior">
+            <div class="circle-overlay yellow"></div>
+            <div class="circle-overlay blue"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
