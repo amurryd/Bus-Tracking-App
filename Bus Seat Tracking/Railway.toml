@@ -1,8 +1,8 @@
 [build]
-  command = "pip install -r requirements.txt"
+command = "pip install -r requirements.txt"
 
 [start]
-  command = "python app.py"
+command = "python app.py"
 
 [env]
-  PORT = "5000"  # Optional, Railway usually sets this automatically
+PORT = "5000"
