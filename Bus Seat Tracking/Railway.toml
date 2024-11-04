@@ -2,4 +2,7 @@
   command = "pip install -r requirements.txt"
 
 [start]
-  command = "flask run"  # This should be the command to run your Flask app
+  command = "python app.py"
+
+[env]
+  PORT = "5000"  # Optional, Railway usually sets this automatically
