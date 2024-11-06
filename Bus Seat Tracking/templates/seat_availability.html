@@ -118,19 +118,22 @@
 <script>
     const socket = io();
 
+    // Log when connected to Socket.IO server
     socket.on('connect', function () {
         console.log('Connected to Socket.IO server');
     });
 
+    // Handle connection errors
     socket.on('connect_error', function (error) {
         console.error('Connection error:', error);
     });
 
+    // Log when disconnected from Socket.IO server
     socket.on('disconnect', function () {
         console.log('Disconnected from Socket.IO server');
     });
 
-    // Listen for update_data event
+    // Listen for update_data event from the server
     socket.on('update_data', function (data) {
         console.log("Received update_data:", data);
 
@@ -138,11 +141,11 @@
         const passengerCount = data.passenger_count;
         const passengerCountElement = document.getElementById('passengerCount');
 
-        // Update each seat's status and classification
+        // Update each seat's status and classification based on received data
         for (const [seatId, seatInfo] of Object.entries(seatData)) {
             const seatElement = document.getElementById(seatId);
             if (seatElement) {
-                // Remove existing status classes
+                // Clear existing status classes before adding new ones
                 seatElement.classList.remove('occupied', 'child', 'luggage', 'available');
                 
                 // Add appropriate class based on status and classification
