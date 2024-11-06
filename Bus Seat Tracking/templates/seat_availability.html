@@ -93,18 +93,24 @@
         <h1>Seat Monitoring</h1>
 
         <!-- Seat Grid -->
-        <div class="seat-grid" id="seatGrid">
+      <div class="seat-grid" id="seatGrid">
             {% for seat, data in seats.items() %}
                 <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
                      class="seat {% if data.status == 'Terisi' %}
                                 {% if data.classification == 'Orang' %}occupied{% endif %}
                                 {% if data.classification == 'Barang' %}luggage{% endif %}
                               {% elif data.status == 'Kosong' %}
-                                {% if data.classification == 'Barang' %}luggage{% endif %}
                                 {% if data.classification == 'Balita' %}child{% endif %}
                                 {% if data.classification == 'N/A' %}available{% endif %}
                               {% endif %}">
                     Seat {{ loop.index }}
+                </div>
+            {% endfor %}
+
+            <!-- Adding dummy seats for 3-10 -->
+            {% for i in range(3, 11) %}
+                <div id="seat{{ i }}" class="seat available">
+                    Seat {{ i }}
                 </div>
             {% endfor %}
         </div>
