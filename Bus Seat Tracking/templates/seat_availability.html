@@ -146,7 +146,7 @@
                 seatElement.classList.remove('occupied', 'child', 'luggage', 'available');
                 
                 // If status is "Kursi Terisi", prioritize it as "occupied"
-                if (seatInfo.status === 'Kursi Terisi') {
+                if (seatInfo.status === 'Terisi') {
                     seatElement.classList.add('occupied');
                 } else {
                     // Otherwise, use classification for styling
