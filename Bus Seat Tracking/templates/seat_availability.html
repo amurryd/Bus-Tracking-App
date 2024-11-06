@@ -148,37 +148,36 @@
     const passengerCountElement = document.getElementById('passengerCount');
 
     // Listen for update_data event from the server
-    socket.on('update_data', function (data) {
-        console.clear();  // Clear console for each new update for clarity
-        console.log("Received update_data:", data);
+   socket.on('update_data', function (data) {
+    const seatData = data.seats;
 
-        const seatData = data.seats;
-
-        // Update each seat's status and classification
-        for (const [seatId, seatInfo] of Object.entries(seatData)) {
-            const seatElement = document.getElementById(seatId);
-            if (seatElement) {
-                // Clear existing status classes before adding new ones
-                seatElement.classList.remove('occupied', 'child', 'luggage', 'available');
-                
-                // Determine and add appropriate class based on seat info
-                if (seatInfo.status === 'Terisi') {
-                    seatElement.classList.add(seatInfo.classification === 'Orang' ? 'occupied' : 'luggage');
-                } else {
-                    seatElement.classList.add(
-                        seatInfo.classification === 'Balita' ? 'child' :
-                        seatInfo.classification === 'N/A' ? 'available' : 'luggage'
-                    );
-                }
+    // Update each seat's status and classification dynamically
+    for (const [seatId, seatInfo] of Object.entries(seatData)) {
+        const seatElement = document.getElementById(seatId);
+        if (seatElement) {
+            // Clear existing status classes before adding new ones
+            seatElement.classList.remove('occupied', 'child', 'luggage', 'available');
+            
+            // Determine and add appropriate class based on seat info
+            if (seatInfo.status === 'Terisi') {
+                seatElement.classList.add(seatInfo.classification === 'Orang' ? 'occupied' : 'luggage');
+            } else {
+                seatElement.classList.add(
+                    seatInfo.classification === 'Balita' ? 'child' :
+                    seatInfo.classification === 'N/A' ? 'available' : 'luggage'
+                );
             }
         }
+    }
 
-        // Update passenger count display if it has changed
-        const newPassengerCountText = `${data.passenger_count} Passengers on The Bus`;
-        if (passengerCountElement.innerText !== newPassengerCountText) {
-            passengerCountElement.innerText = newPassengerCountText;
-        }
-    });
+    // Update passenger count display if it has changed
+    const passengerCountElement = document.getElementById('passengerCount');
+    const newPassengerCountText = `${data.passenger_count} Passengers on The Bus`;
+    if (passengerCountElement.innerText !== newPassengerCountText) {
+        passengerCountElement.innerText = newPassengerCountText;
+    }
+});
+
 </script>
 
 
