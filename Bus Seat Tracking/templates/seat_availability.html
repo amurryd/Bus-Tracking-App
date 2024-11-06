@@ -115,51 +115,52 @@
     </div>
 
     <!-- Socket.IO Script -->
-    <script>
-        const socket = io();
+<script>
+    const socket = io();
 
-        socket.on('connect', function () {
-            console.log('Connected to Socket.IO server');
-        });
+    socket.on('connect', function () {
+        console.log('Connected to Socket.IO server');
+    });
 
-        socket.on('connect_error', function (error) {
-            console.error('Connection error:', error);
-        });
+    socket.on('connect_error', function (error) {
+        console.error('Connection error:', error);
+    });
 
-        socket.on('disconnect', function () {
-            console.log('Disconnected from Socket.IO server');
-        });
+    socket.on('disconnect', function () {
+        console.log('Disconnected from Socket.IO server');
+    });
 
-        // Listen for update_data event from the server
-        socket.on('update_data', function (data) {
-            console.log("Received update_data:", data);
+    // Listen for update_data event from the server
+    socket.on('update_data', function (data) {
+        console.log("Received update_data:", data);
 
-            const seatData = data.seats;
-            const passengerCount = data.passenger_count;
-            const passengerCountElement = document.getElementById('passengerCount');
+        const seatData = data.seats;
+        const passengerCount = data.passenger_count;
+        const passengerCountElement = document.getElementById('passengerCount');
 
-            // Update each seat's status and classification based on received data
-            for (const [seatId, seatInfo] of Object.entries(seatData)) {
-                const seatElement = document.getElementById(seatId);
-                if (seatElement) {
-                    // Clear existing status classes before adding new ones
-                    seatElement.classList.remove('occupied', 'child', 'luggage', 'available');
-                    
-                    // Add appropriate class based on status and classification
-                    seatElement.classList.add(
-                        seatInfo.status === 'Kursi Terisi' ? 'occupied' :
-                        seatInfo.classification === 'Terdapat Balita' ? 'child' :
-                        seatInfo.classification === 'Terdapat Barang' ? 'luggage' : 'available'
-                    );
-                }
+        // Update each seat's status and classification based on received data
+        for (const [seatId, seatInfo] of Object.entries(seatData)) {
+            const seatElement = document.getElementById(seatId);
+            if (seatElement) {
+                // Clear existing status classes before adding new ones
+                seatElement.classList.remove('occupied', 'child', 'luggage', 'available');
+                
+                // Prioritize "Terisi" status to show seat as occupied, even if classification is "N/A"
+                seatElement.classList.add(
+                    seatInfo.status === 'Kursi Terisi' ? 'occupied' :
+                    seatInfo.classification === 'Terdapat Balita' ? 'child' :
+                    seatInfo.classification === 'Terdapat Barang' ? 'luggage' : 'available'
+                );
             }
+        }
 
-            // Update passenger count if changed
-            if (passengerCountElement.innerText !== `${passengerCount} Passengers on The Bus`) {
-                passengerCountElement.innerText = `${passengerCount} Passengers on The Bus`;
-            }
-        });
-    </script>
+        // Update passenger count if changed
+        if (passengerCountElement.innerText !== `${passengerCount} Passengers on The Bus`) {
+            passengerCountElement.innerText = `${passengerCount} Passengers on The Bus`;
+        }
+    });
+</script>
+
 
     <script async src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
