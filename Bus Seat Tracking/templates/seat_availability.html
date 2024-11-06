@@ -1,98 +1,166 @@
-# app.py
-import os
-import eventlet
-eventlet.monkey_patch()
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-seat Tracker - Seat Monitoring</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script async src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        /* General Styling */
+        body { background-color: #f9fafc; color: #001f3f; font-family: Arial, sans-serif; }
+        .navbar { background-color: white; padding: 0.8rem 1.5rem; border-bottom: 1px solid #eaeaea; }
+        .navbar-brand { font-weight: bold; color: #001f3f !important; font-size: 1.2rem; display: flex; align-items: center; }
+        .navbar-brand img { width: 40px; height: auto; margin-right: 0.5rem; }
+        .nav-link { color: #001f3f !important; margin: 0 0.5rem; font-weight: 500; }
+        .nav-link.active { background-color: #ffc107; border-radius: 0.5rem; padding: 0.3rem 0.8rem; }
 
-from flask import Flask, render_template
-from flask_socketio import SocketIO
-from flask_mqtt import Mqtt
+        /* Seat Monitoring Section */
+        .seat-monitoring { padding: 2rem 1rem; text-align: center; }
+        .seat-monitoring h1 { font-size: 2rem; font-weight: bold; color: #001f3f; margin-bottom: 1rem; }
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'
-
-# MQTT configuration
-app.config['MQTT_BROKER_URL'] = 'test.mosquitto.org'
-app.config['MQTT_BROKER_PORT'] = 1883
-app.config['MQTT_KEEPALIVE'] = 60
-app.config['MQTT_TLS_ENABLED'] = False
-
-# Initialize Flask extensions
-socketio = SocketIO(app, logger=True, engineio_logger=True)
-mqtt = Mqtt(app)
-
-# Initialize seat and passenger data
-seats = {}
-passenger_count = 0
-
-def initialize_seats(num_seats):
-    global seats
-    seats = {
-        f"seat{i}": {
-            "status": "Kursi Kosong",
-            "classification": "N/A"
+        /* Seat Grid */
+        .seat-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 0.8rem; 
+            justify-items: center; 
+            margin-top: 1rem; 
         }
-        for i in range(1, num_seats + 1)
-    }
 
-initialize_seats(10)  # Set the number of seats
+        /* Seat Styling */
+        .seat { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold; 
+            color: white; 
+            padding: 0.8rem; 
+            border-radius: 8px; 
+            text-align: center; 
+            font-size: 0.9rem; 
+            min-width: 70px; 
+            min-height: 70px;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+        }
 
-@mqtt.on_connect()
-def handle_connect(client, userdata, flags, rc):
-    if rc == 0:
-        print("Connected to MQTT broker")
-        mqtt.subscribe("sensor/status1")
-        mqtt.subscribe("sensor/klasifikasi1")
-        mqtt.subscribe("sensor/status2")
-        mqtt.subscribe("sensor/klasifikasi2")
-        mqtt.subscribe("rfid/totalTags")
-    else:
-        print("Failed to connect, return code", rc)
+        /* Seat Status Colors */
+        .occupied { background-color: #ff4d4d; }
+        .child { background-color: #ff8c1a; }
+        .luggage { background-color: #ffd700; }
+        .available { background-color: #4caf50; }
 
+        /* Passenger Count */
+        .passenger-count { font-size: 1.5rem; font-weight: bold; color: #001f3f; margin-top: 1.2rem; }
 
-@mqtt.on_message()
-def handle_mqtt_message(client, userdata, message):
-    global seats, passenger_count
-    topic = message.topic
-    payload = message.payload.decode()
-    
-    print(f"Received MQTT message on {topic}: {payload}")  # Debug log
+        /* Legend Styling */
+        .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-top: 1.5rem; justify-content: center; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+        .legend-box { width: 20px; height: 20px; border-radius: 4px; }
 
-    # Process seat status and classification
-    if topic == "sensor/status1":
-        seats['seat1']['status'] = payload
-    elif topic == "sensor/klasifikasi1":
-        seats['seat1']['classification'] = payload
-    elif topic == "sensor/status2":
-        seats['seat2']['status'] = payload
-    elif topic == "sensor/klasifikasi2":
-        seats['seat2']['classification'] = payload
-    elif topic == "rfid/totalTags":
-        passenger_count = int(payload)
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .seat-monitoring h1 { font-size: 1.6rem; }
+            .navbar { padding: 0.5rem 1rem; }
+            .navbar-brand { font-size: 1rem; }
+            .seat { font-size: 0.8rem; padding: 0.7rem; }
+            .passenger-count { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
 
-    # Emit updated data to all connected WebSocket clients
-    print("Emitting update to WebSocket clients")  # Debug log
-    socketio.emit('update_data', {'seats': seats, 'passenger_count': passenger_count})
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="/">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="E-seat Logo"> E-seat Tracker
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/seat_availability">Seat Monitoring</a></li>
+                <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
 
+    <!-- Seat Monitoring Section -->
+    <div class="seat-monitoring container">
+        <h1>Seat Monitoring</h1>
 
-    # Emit updated data to all connected WebSocket clients
-    print("Emitting update to WebSocket clients")  # Debug log
-    socketio.emit('update_data', {'seats': seats, 'passenger_count': passenger_count})
+        <!-- Seat Grid -->
+        <div class="seat-grid" id="seatGrid">
+            {% for seat, data in seats.items() %}
+                <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
+                     class="seat {% if data.status == 'Kursi Terisi' %}occupied{% elif data.classification == 'Terdapat Balita' %}child{% elif data.classification == 'Terdapat Barang' %}luggage{% else %}available{% endif %}">
+                    Seat {{ loop.index }}
+                </div>
+            {% endfor %}
+        </div>
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+        <!-- Passenger Count -->
+        <div class="passenger-count" id="passengerCount">{{ passenger_count }} Passengers on The Bus</div>
 
-@app.route('/seat_availability')
-def seat_availability():
-    return render_template('seat_availability.html', seats=seats, passenger_count=passenger_count)
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item"><div class="legend-box occupied"></div> Occupied</div>
+            <div class="legend-item"><div class="legend-box child"></div> Child</div>
+            <div class="legend-item"><div class="legend-box luggage"></div> Luggage</div>
+            <div class="legend-item"><div class="legend-box available"></div> Available</div>
+        </div>
+    </div>
 
-@app.route('/about')
-def about():
-    return render_template('about.html')
+    <!-- Socket.IO Script -->
+    <script>
+        const socket = io();
 
-@app.route('/contact')
-def contact():
-    return render_template('contact.html')
+        socket.on('connect', function () {
+            console.log('Connected to Socket.IO server');
+        });
 
-if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+        socket.on('connect_error', function (error) {
+            console.error('Connection error:', error);
+        });
+
+        socket.on('disconnect', function () {
+            console.log('Disconnected from Socket.IO server');
+        });
+
+        // Listen for update_data event from the server
+        socket.on('update_data', function (data) {
+            console.log("Received update_data:", data);
+
+            const seatData = data.seats;
+            const passengerCount = data.passenger_count;
+            const passengerCountElement = document.getElementById('passengerCount');
+
+            // Update each seat's status and classification based on received data
+            for (const [seatId, seatInfo] of Object.entries(seatData)) {
+                const seatElement = document.getElementById(seatId);
+                if (seatElement) {
+                    // Clear existing status classes before adding new ones
+                    seatElement.classList.remove('occupied', 'child', 'luggage', 'available');
+                    
+                    // Add appropriate class based on status and classification
+                    seatElement.classList.add(
+                        seatInfo.status === 'Kursi Terisi' ? 'occupied' :
+                        seatInfo.classification === 'Terdapat Balita' ? 'child' :
+                        seatInfo.classification === 'Terdapat Barang' ? 'luggage' : 'available'
+                    );
+                }
+            }
+
+            // Update passenger count if changed
+            if (passengerCountElement.innerText !== `${passengerCount} Passengers on The Bus`) {
+                passengerCountElement.innerText = `${passengerCount} Passengers on The Bus`;
+            }
+        });
+    </script>
+
+    <script async src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
