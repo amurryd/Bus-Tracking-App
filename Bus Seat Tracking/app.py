@@ -58,14 +58,21 @@ def handle_mqtt_message(client, userdata, message):
     print(f"Received MQTT message on {topic}: {payload}")  # Debug log
 
     # Process seat status and classification
-    if "sensor/seat" in topic:
-        seat_name = topic.split("/")[1]
-        if "status" in topic:
-            seats[seat_name]["status"] = payload
-        elif "klasifikasi" in topic:
-            seats[seat_name]["classification"] = payload
+    if topic == "sensor/status1":
+        seats['seat1']['status'] = payload
+    elif topic == "sensor/klasifikasi1":
+        seats['seat1']['classification'] = payload
+    elif topic == "sensor/status2":
+        seats['seat2']['status'] = payload
+    elif topic == "sensor/klasifikasi2":
+        seats['seat2']['classification'] = payload
     elif topic == "rfid/totalTags":
         passenger_count = int(payload)
+
+    # Emit updated data to all connected WebSocket clients
+    print("Emitting update to WebSocket clients")  # Debug log
+    socketio.emit('update_data', {'seats': seats, 'passenger_count': passenger_count})
+
 
     # Emit updated data to all connected WebSocket clients
     print("Emitting update to WebSocket clients")  # Debug log
