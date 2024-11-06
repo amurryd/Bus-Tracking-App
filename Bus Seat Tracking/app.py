@@ -1,4 +1,5 @@
 # app.py
+import os
 import eventlet
 eventlet.monkey_patch()
 
@@ -16,7 +17,7 @@ app.config['MQTT_KEEPALIVE'] = 60
 app.config['MQTT_TLS_ENABLED'] = False
 
 # Initialize Flask extensions
-socketio = SocketIO(app)
+socketio = SocketIO(app, logger=True, engineio_logger=True)
 mqtt = Mqtt(app)
 
 # Initialize seat and passenger data
@@ -52,6 +53,8 @@ def handle_mqtt_message(client, userdata, message):
     global seats, passenger_count
     topic = message.topic
     payload = message.payload.decode()
+    
+    print(f"Received MQTT message on {topic}: {payload}")  # Debug log
 
     # Process seat status and classification
     if "sensor/seat" in topic:
@@ -64,6 +67,7 @@ def handle_mqtt_message(client, userdata, message):
         passenger_count = int(payload)
 
     # Emit updated data to all connected WebSocket clients
+    print("Emitting update to WebSocket clients")  # Debug log
     socketio.emit('update_data', {'seats': seats, 'passenger_count': passenger_count})
 
 @app.route('/')
