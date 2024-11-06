@@ -96,7 +96,13 @@
         <div class="seat-grid" id="seatGrid">
             {% for seat, data in seats.items() %}
                 <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
-                     class="seat {% if data.status == 'Terisi' %}occupied{% elif data.classification == 'Terdapat Balita' %}child{% elif data.classification == 'Terdapat Barang' %}luggage{% else %}available{% endif %}">
+                     class="seat {% if data.status == 'Terisi' %}
+                                {% if data.classification == 'Orang' %}occupied{% endif %}
+                                {% if data.classification == 'Barang' %}luggage{% endif %}
+                              {% elif data.status == 'Kosong' %}
+                                {% if data.classification == 'Balita' %}child{% endif %}
+                                {% if data.classification == 'N/A' %}available{% endif %}
+                              {% endif %}">
                     Seat {{ loop.index }}
                 </div>
             {% endfor %}
@@ -154,11 +160,11 @@
                 
                 // Determine and add appropriate class based on seat info
                 if (seatInfo.status === 'Terisi') {
-                    seatElement.classList.add('occupied');
+                    seatElement.classList.add(seatInfo.classification === 'Orang' ? 'occupied' : 'luggage');
                 } else {
                     seatElement.classList.add(
-                        seatInfo.classification === 'Terdapat Balita' ? 'child' :
-                        seatInfo.classification === 'Terdapat Barang' ? 'luggage' : 'available'
+                        seatInfo.classification === 'Balita' ? 'child' :
+                        seatInfo.classification === 'N/A' ? 'available' : 'luggage'
                     );
                 }
             }
@@ -172,7 +178,5 @@
     });
 </script>
 
-
-    <script async src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
