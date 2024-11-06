@@ -21,28 +21,28 @@
 
         /* Seat Grid */
         .seat-grid { 
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Make sure you're using an even number of columns for the layout */
-    gap: 0.8rem;
-    justify-items: center;
-    margin-top: 1rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.8rem;
+            justify-items: center;
+            margin-top: 1rem;
         }
 
         /* Seat Styling */
         .seat { 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    color: white;
-    padding: 0.8rem;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 0.9rem;
-    min-width: 70px;
-    min-height: 70px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-    margin: 0; /* Ensure there's no margin causing unexpected space */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            padding: 0.8rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+            min-width: 70px;
+            min-height: 70px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            margin: 0;
         }
 
         /* Seat Status Colors */
@@ -93,23 +93,22 @@
     <div class="seat-monitoring container">
         <h1>Seat Monitoring</h1>
 
-<!-- Seat Grid -->
-<div class="seat-grid" id="seatGrid">
-    {% for seat, data in seats.items() %}
-        <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
-             class="seat {% if data.status == 'Terisi' %}
-                        {% if data.classification == 'Orang' %}occupied{% endif %}
-                        {% if data.classification == 'Barang' %}luggage{% endif %}
-                      {% elif data.status == 'Kosong' %}
-                        {% if data.classification == 'Barang' %}luggage{% endif %}
-                        {% if data.classification == 'Balita' %}child{% endif %}
-                        {% if data.classification == 'N/A' %}available{% endif %}
-                      {% endif %}">
-            Seat {{ loop.index }}
+        <!-- Seat Grid -->
+        <div class="seat-grid" id="seatGrid">
+            {% for seat, data in seats.items() %}
+                <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
+                     class="seat {% if data.status == 'Terisi' %}
+                                {% if data.classification == 'Orang' %}occupied{% endif %}
+                                {% if data.classification == 'Barang' %}luggage{% endif %}
+                              {% elif data.status == 'Kosong' %}
+                                {% if data.classification == 'Barang' %}luggage{% endif %}
+                                {% if data.classification == 'Balita' %}child{% endif %}
+                                {% if data.classification == 'N/A' %}available{% endif %}
+                              {% endif %}">
+                    Seat {{ loop.index }}
+                </div>
+            {% endfor %}
         </div>
-    {% endfor %}
-</div>
-
 
         <!-- Passenger Count -->
         <div class="passenger-count" id="passengerCount">{{ passenger_count }} Passengers on The Bus</div>
@@ -152,6 +151,7 @@
         console.clear();  // Clear console for each new update for clarity
         console.log("Received update_data:", data);
         const seatData = data.seats;
+
         // Update each seat's status and classification
         for (const [seatId, seatInfo] of Object.entries(seatData)) {
             const seatElement = document.getElementById(seatId);
@@ -168,8 +168,8 @@
                         seatInfo.classification === 'N/A' ? 'available' : 'luggage'
                     );
                 }
+            }
         }
-    }
 
         // Update passenger count display if it has changed
         const newPassengerCountText = `${data.passenger_count} Passengers on The Bus`;
@@ -177,10 +177,7 @@
             passengerCountElement.innerText = newPassengerCountText;
         }
     });
-});
-
 </script>
-
 
 <script async src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
