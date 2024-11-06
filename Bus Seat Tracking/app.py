@@ -40,13 +40,14 @@ initialize_seats(10)  # Set the number of seats
 def handle_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected to MQTT broker")
-        mqtt.subscribe("sensor/seat1/status")
-        mqtt.subscribe("sensor/seat1/klasifikasi")
-        mqtt.subscribe("sensor/seat2/status")
-        mqtt.subscribe("sensor/seat2/klasifikasi")
+        mqtt.subscribe("sensor/status1")
+        mqtt.subscribe("sensor/klasifikasi1")
+        mqtt.subscribe("sensor/status2")
+        mqtt.subscribe("sensor/klasifikasi2")
         mqtt.subscribe("rfid/totalTags")
     else:
         print("Failed to connect, return code", rc)
+
 
 @mqtt.on_message()
 def handle_mqtt_message(client, userdata, message):
