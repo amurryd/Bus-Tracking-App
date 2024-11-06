@@ -20,11 +20,10 @@ app.config['MQTT_TLS_ENABLED'] = False
 socketio = SocketIO(app, logger=True, engineio_logger=True)
 mqtt = Mqtt(app)
 
-# Initialize seat and passenger data
 seats = {}
 passenger_count = 0
 
-# Initialize all 10 seats, but only update seats 1 and 2 via MQTT
+# Initialize all 10 seats with default status and classification
 def initialize_seats(num_seats):
     global seats
     seats = {
@@ -38,12 +37,7 @@ def initialize_seats(num_seats):
 initialize_seats(10)  # Initialize 10 seats with default available status for all
 
 # Completeness tracking for seat data updates
-seat_data_complete = {
-    "seat1": {"status": False, "classification": False},
-    "seat2": {"status": False, "classification": False}
-}
-
-# app.py
+seat_data_complete = {f"seat{i}": {"status": False, "classification": False} for i in range(1, 11)}
 
 def emit_if_seat_data_complete(seat_id):
     """Emit seat data if both status and classification are complete for the seat."""
@@ -59,10 +53,10 @@ def emit_if_seat_data_complete(seat_id):
 def handle_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected to MQTT broker")
-        mqtt.subscribe("sensor/status1")
-        mqtt.subscribe("sensor/klasifikasi1")
-        mqtt.subscribe("sensor/status2")
-        mqtt.subscribe("sensor/klasifikasi2")
+        # Subscribe to all seat topics
+        for i in range(1, 11):
+            mqtt.subscribe(f"sensor/status{i}")
+            mqtt.subscribe(f"sensor/klasifikasi{i}")
         mqtt.subscribe("rfid/totalPass")
     else:
         print("Failed to connect, return code", rc)
@@ -76,27 +70,20 @@ def handle_mqtt_message(client, userdata, message):
     
     print(f"Received MQTT message on {topic}: {payload}")
 
-    # Process seat1 status and classification
-    if topic == "sensor/status1":
-        seats['seat1']['status'] = payload
-        seat_data_complete["seat1"]["status"] = True
-        emit_if_seat_data_complete("seat1")
-    
-    elif topic == "sensor/klasifikasi1":
-        seats['seat1']['classification'] = payload
-        seat_data_complete["seat1"]["classification"] = True
-        emit_if_seat_data_complete("seat1")
+    # Update seat status and classification for each seat
+    if topic.startswith("sensor/status"):
+        seat_id = topic.split("/")[-1]  # Get seat number (e.g., '1' from 'sensor/status1')
+        if seat_id in seats:
+            seats[f"seat{seat_id}"]['status'] = payload
+            seat_data_complete[f"seat{seat_id}"]["status"] = True
+            emit_if_seat_data_complete(f"seat{seat_id}")
 
-    # Process seat2 status and classification
-    elif topic == "sensor/status2":
-        seats['seat2']['status'] = payload
-        seat_data_complete["seat2"]["status"] = True
-        emit_if_seat_data_complete("seat2")
-
-    elif topic == "sensor/klasifikasi2":
-        seats['seat2']['classification'] = payload
-        seat_data_complete["seat2"]["classification"] = True
-        emit_if_seat_data_complete("seat2")
+    elif topic.startswith("sensor/klasifikasi"):
+        seat_id = topic.split("/")[-1]  # Get seat number (e.g., '1' from 'sensor/klasifikasi1')
+        if seat_id in seats:
+            seats[f"seat{seat_id}"]['classification'] = payload
+            seat_data_complete[f"seat{seat_id}"]["classification"] = True
+            emit_if_seat_data_complete(f"seat{seat_id}")
 
     # Update passenger count immediately
     elif topic == "rfid/totalPass":
