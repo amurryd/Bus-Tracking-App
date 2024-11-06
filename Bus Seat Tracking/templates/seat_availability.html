@@ -21,27 +21,28 @@
 
         /* Seat Grid */
         .seat-grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 0.8rem; 
-            justify-items: center; 
-            margin-top: 1rem; 
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Make sure you're using an even number of columns for the layout */
+    gap: 0.8rem;
+    justify-items: center;
+    margin-top: 1rem;
         }
 
         /* Seat Styling */
         .seat { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: bold; 
-            color: white; 
-            padding: 0.8rem; 
-            border-radius: 8px; 
-            text-align: center; 
-            font-size: 0.9rem; 
-            min-width: 70px; 
-            min-height: 70px;
-            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    padding: 0.8rem;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.9rem;
+    min-width: 70px;
+    min-height: 70px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    margin: 0; /* Ensure there's no margin causing unexpected space */
         }
 
         /* Seat Status Colors */
@@ -109,12 +110,11 @@
             {% endfor %}
 
             <!-- Adding dummy seats for 3-10 -->
-            {% for i in range(3, 11) %}
-                <div id="seat{{ i }}" class="seat available">
-                    Seat {{ i }}
-                </div>
-            {% endfor %}
-        </div>
+{% for i in range(3, 11) %}
+    <div id="seat{{ i }}" class="seat available">
+        Seat {{ i }}
+    </div>
+{% endfor %}
 
         <!-- Passenger Count -->
         <div class="passenger-count" id="passengerCount">{{ passenger_count }} Passengers on The Bus</div>
