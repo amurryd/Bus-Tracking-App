@@ -59,7 +59,7 @@ def handle_connect(client, userdata, flags, rc):
         mqtt.subscribe("sensor/klasifikasi1")
         mqtt.subscribe("sensor/status2")
         mqtt.subscribe("sensor/klasifikasi2")
-        mqtt.subscribe("rfid/totalTags")
+        mqtt.subscribe("rfid/totalPass")
     else:
         print("Failed to connect, return code", rc)
 
@@ -95,7 +95,7 @@ def handle_mqtt_message(client, userdata, message):
         emit_if_seat_data_complete("seat2")
 
     # Update passenger count immediately
-    elif topic == "rfid/totalTags":
+    elif topic == "rfid/totalPass":
         passenger_count = int(payload)
         socketio.emit('update_data', {'seats': seats, 'passenger_count': passenger_count})
 
