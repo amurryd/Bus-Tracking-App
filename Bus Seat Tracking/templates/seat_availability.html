@@ -109,13 +109,6 @@
                 </div>
             {% endfor %}
 
-            <!-- Adding dummy seats for 3-10 -->
-{% for i in range(3, 11) %}
-    <div id="seat{{ i }}" class="seat available">
-        Seat {{ i }}
-    </div>
-{% endfor %}
-
         <!-- Passenger Count -->
         <div class="passenger-count" id="passengerCount">{{ passenger_count }} Passengers on The Bus</div>
 
