@@ -24,18 +24,18 @@ mqtt = Mqtt(app)
 seats = {}
 passenger_count = 0
 
-# Set the number of seats and initialize
+# Initialize all 10 seats, but only update seats 1 and 2 via MQTT
 def initialize_seats(num_seats):
     global seats
     seats = {
         f"seat{i}": {
-            "status": "Kursi Kosong",
-            "classification": "N/A"
+            "status": "Kosong",  # "Available" in Bahasa Indonesia
+            "classification": "N/A"  # Default classification
         }
         for i in range(1, num_seats + 1)
     }
 
-initialize_seats(10)  # Initialize 10 seats
+initialize_seats(10)  # Initialize 10 seats with default available status for all
 
 # Completeness tracking for seat data updates
 seat_data_complete = {
