@@ -49,7 +49,7 @@ def emit_if_seat_data_complete(seat_id):
     """Emit seat data if both status and classification are complete for the seat."""
     if seat_data_complete[seat_id]["status"] and seat_data_complete[seat_id]["classification"]:
         # Emit data to all connected clients
-        socketio.emit('update_data', {'seats': seats, 'passenger_count': passenger_count}, to='/')
+        socketio.emit('update_data', {'seats': seats, 'passenger_count': passenger_count})
         # Reset flags for the next update
         seat_data_complete[seat_id]["status"] = False
         seat_data_complete[seat_id]["classification"] = False
