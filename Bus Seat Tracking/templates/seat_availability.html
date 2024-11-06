@@ -96,7 +96,7 @@
         <div class="seat-grid" id="seatGrid">
             {% for seat, data in seats.items() %}
                 <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
-                     class="seat {% if data.status == 'Kursi Terisi' %}occupied{% elif data.classification == 'Terdapat Balita' %}child{% elif data.classification == 'Terdapat Barang' %}luggage{% else %}available{% endif %}">
+                     class="seat {% if data.status == 'Terisi' %}occupied{% elif data.classification == 'Terdapat Balita' %}child{% elif data.classification == 'Terdapat Barang' %}luggage{% else %}available{% endif %}">
                     Seat {{ loop.index }}
                 </div>
             {% endfor %}
