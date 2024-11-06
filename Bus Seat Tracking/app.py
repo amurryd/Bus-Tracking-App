@@ -43,16 +43,14 @@ seat_data_complete = {
     f"seat{i}": {"status": False, "classification": False} for i in range(1, 3)
 }
 
-
 def emit_if_seat_data_complete(seat_id):
     """Emit seat data if both status and classification are complete for the seat."""
     if seat_data_complete[seat_id]["status"] and seat_data_complete[seat_id]["classification"]:
-        # Emit data to all connected clients
+        # Emit updated data to all connected clients
         socketio.emit('update_data', {'seats': seats, 'passenger_count': passenger_count})
         # Reset flags for the next update
         seat_data_complete[seat_id]["status"] = False
         seat_data_complete[seat_id]["classification"] = False
-
 
 @mqtt.on_connect()
 def handle_connect(client, userdata, flags, rc):
@@ -65,7 +63,6 @@ def handle_connect(client, userdata, flags, rc):
         mqtt.subscribe("rfid/totalPass")
     else:
         print("Failed to connect, return code", rc)
-
 
 @mqtt.on_message()
 def handle_mqtt_message(client, userdata, message):
