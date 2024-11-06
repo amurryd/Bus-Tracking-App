@@ -6,6 +6,7 @@ eventlet.monkey_patch()
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 from flask_mqtt import Mqtt
+from threading import Lock
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -19,6 +20,7 @@ app.config['MQTT_TLS_ENABLED'] = False
 # Initialize Flask extensions
 socketio = SocketIO(app, logger=True, engineio_logger=True)
 mqtt = Mqtt(app)
+thread_lock = Lock()  # Lock to handle race conditions
 
 seats = {}
 passenger_count = 0
@@ -38,8 +40,7 @@ initialize_seats(10)  # Initialize 10 seats with default available status for al
 
 # Completeness tracking for seat data updates
 seat_data_complete = {
-    "seat1": {"status": False, "classification": False},
-    "seat2": {"status": False, "classification": False}
+    f"seat{i}": {"status": False, "classification": False} for i in range(1, 3)
 }
 
 
@@ -74,30 +75,34 @@ def handle_mqtt_message(client, userdata, message):
     
     print(f"Received MQTT message on {topic}: {payload}")
 
-    # Update seat status and classification for each seat
-     if topic == "sensor/status1":
-        seats['seat1']['status'] = payload
-        seat_data_complete["seat1"]["status"] = True
-        emit_if_seat_data_complete("seat1")
-    
-    elif topic == "sensor/klasifikasi1":
-        seats['seat1']['classification'] = payload
-        seat_data_complete["seat1"]["classification"] = True
-        emit_if_seat_data_complete("seat1")
-    # Process seat2 status and classification
-    elif topic == "sensor/status2":
-        seats['seat2']['status'] = payload
-        seat_data_complete["seat2"]["status"] = True
-        emit_if_seat_data_complete("seat2")
-    elif topic == "sensor/klasifikasi2":
-        seats['seat2']['classification'] = payload
-        seat_data_complete["seat2"]["classification"] = True
-        emit_if_seat_data_complete("seat2")
+    # Lock to prevent race conditions
+    with thread_lock:
+        # Update seat status and classification for each seat
+        if topic == "sensor/status1":
+            seats['seat1']['status'] = payload
+            seat_data_complete["seat1"]["status"] = True
+            emit_if_seat_data_complete("seat1")
+        
+        elif topic == "sensor/klasifikasi1":
+            seats['seat1']['classification'] = payload
+            seat_data_complete["seat1"]["classification"] = True
+            emit_if_seat_data_complete("seat1")
 
-    # Update passenger count immediately
-    elif topic == "rfid/totalPass":
-        passenger_count = int(payload)
-        socketio.emit('update_data', {'seats': seats, 'passenger_count': passenger_count})
+        # Process seat2 status and classification
+        elif topic == "sensor/status2":
+            seats['seat2']['status'] = payload
+            seat_data_complete["seat2"]["status"] = True
+            emit_if_seat_data_complete("seat2")
+        
+        elif topic == "sensor/klasifikasi2":
+            seats['seat2']['classification'] = payload
+            seat_data_complete["seat2"]["classification"] = True
+            emit_if_seat_data_complete("seat2")
+
+        # Update passenger count immediately
+        elif topic == "rfid/totalPass":
+            passenger_count = int(payload)
+            socketio.emit('update_data', {'seats': seats, 'passenger_count': passenger_count})
 
 @app.route('/')
 def home():
