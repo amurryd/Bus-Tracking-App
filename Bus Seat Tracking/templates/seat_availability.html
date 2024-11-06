@@ -100,6 +100,7 @@
                                 {% if data.classification == 'Orang' %}occupied{% endif %}
                                 {% if data.classification == 'Barang' %}luggage{% endif %}
                               {% elif data.status == 'Kosong' %}
+                                {% if data.classification == 'Barang' %}luggage{% endif %}
                                 {% if data.classification == 'Balita' %}child{% endif %}
                                 {% if data.classification == 'N/A' %}available{% endif %}
                               {% endif %}">
