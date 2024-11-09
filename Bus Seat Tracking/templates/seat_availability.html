@@ -152,15 +152,14 @@
         <!-- Seat Monitoring Section -->
         <div class="seat-monitoring container">
             <h1>Seat Monitoring</h1>
-            <!-- Updated Bus Body Container -->
-            <!-- Bus Body Container with Driver Seat and Entrance -->
+            <!-- Updated Bus Body Container with Driver Seat and Entrance -->
             <div class="bus-body">
-                <div class="bus-layout">
+                <div class="bus-seats" id="seatGrid">
                     <!-- Driver Seat and Entrance at the front of the bus -->
                     <div class="driver-seat" id="driverSeat">Driver</div>
                     <div class="entrance">Entrance</div>
                     <!-- Aisle and Seats Layout -->
-                    <div class="bus-seats" id="seatGrid">
+                    <div class="bus-layout">
                         {% for seat, data in seats.items() %}
                         <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
                             class="seat {% if data.status == 'Terisi' %}
