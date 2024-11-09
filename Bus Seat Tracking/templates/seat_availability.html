@@ -38,7 +38,17 @@
             justify-items: center;
         }
         .driver-seat {
-            grid-column: span 5;
+            grid-column: span 1;
+            background-color: #001f3f;
+            color: #fff;
+            font-weight: bold;
+            padding: 0.8rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .entrance{
+            grid-column: span 1;
             background-color: #001f3f;
             color: #fff;
             font-weight: bold;
@@ -117,6 +127,9 @@
 
         <!-- Bus Body Container -->
         <div class="bus-body">
+            <div class="entrance">Entrance</div>
+            <div class="aisle"></div>
+            <div class="aisle"></div>
             <!-- Driver's seat -->
             <div class="driver-seat">Driver</div>
 
