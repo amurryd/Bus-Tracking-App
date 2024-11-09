@@ -25,8 +25,8 @@ thread_lock = Lock()  # Lock to handle race conditions
 seats = {}
 passenger_count = 0
 
-# Initialize all 10 seats with default status and classification
-def initialize_seats(num_seats):
+# Initialize 20 seats with default status and classification
+def initialize_seats(num_seats=20):
     global seats
     seats = {
         f"seat{i}": {
@@ -36,11 +36,11 @@ def initialize_seats(num_seats):
         for i in range(1, num_seats + 1)
     }
 
-initialize_seats(10)  # Initialize 10 seats with default available status for all
+initialize_seats()  # Initialize 20 seats
 
-# Completeness tracking for seat data updates
+# Track completeness for seat data updates
 seat_data_complete = {
-    f"seat{i}": {"status": False, "classification": False} for i in range(1, 3)
+    f"seat{i}": {"status": False, "classification": False} for i in range(1, 21)
 }
 
 def emit_if_seat_data_complete(seat_id):
@@ -56,10 +56,11 @@ def emit_if_seat_data_complete(seat_id):
 def handle_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected to MQTT broker")
-        mqtt.subscribe("sensor/status1")
-        mqtt.subscribe("sensor/klasifikasi1")
-        mqtt.subscribe("sensor/status2")
-        mqtt.subscribe("sensor/klasifikasi2")
+        # Subscribe to each seat's status and classification topic
+        for i in range(1, 21):
+            mqtt.subscribe(f"sensor/status{i}")
+            mqtt.subscribe(f"sensor/klasifikasi{i}")
+        # Subscribe to passenger count topic
         mqtt.subscribe("rfid/totalPass")
     else:
         print("Failed to connect, return code", rc)
@@ -74,29 +75,22 @@ def handle_mqtt_message(client, userdata, message):
 
     # Lock to prevent race conditions
     with thread_lock:
-        # Update seat status and classification for each seat
-        if topic == "sensor/status1":
-            seats['seat1']['status'] = payload
-            seat_data_complete["seat1"]["status"] = True
-            emit_if_seat_data_complete("seat1")
-        
-        elif topic == "sensor/klasifikasi1":
-            seats['seat1']['classification'] = payload
-            seat_data_complete["seat1"]["classification"] = True
-            emit_if_seat_data_complete("seat1")
+        # Determine seat number from topic
+        if topic.startswith("sensor/status") or topic.startswith("sensor/klasifikasi"):
+            seat_num = topic.split("sensor/")[1].split("status")[1] if "status" in topic else topic.split("klasifikasi")[1]
+            seat_id = f"seat{seat_num}"
+            
+            # Update seat status or classification based on topic
+            if f"status{seat_num}" in topic:
+                seats[seat_id]['status'] = payload
+                seat_data_complete[seat_id]["status"] = True
+                emit_if_seat_data_complete(seat_id)
+            elif f"klasifikasi{seat_num}" in topic:
+                seats[seat_id]['classification'] = payload
+                seat_data_complete[seat_id]["classification"] = True
+                emit_if_seat_data_complete(seat_id)
 
-        # Process seat2 status and classification
-        elif topic == "sensor/status2":
-            seats['seat2']['status'] = payload
-            seat_data_complete["seat2"]["status"] = True
-            emit_if_seat_data_complete("seat2")
-        
-        elif topic == "sensor/klasifikasi2":
-            seats['seat2']['classification'] = payload
-            seat_data_complete["seat2"]["classification"] = True
-            emit_if_seat_data_complete("seat2")
-
-        # Update passenger count immediately
+        # Update passenger count immediately if topic is `rfid/totalPass`
         elif topic == "rfid/totalPass":
             passenger_count = int(payload)
             socketio.emit('update_data', {'seats': seats, 'passenger_count': passenger_count})
