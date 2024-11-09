@@ -134,7 +134,7 @@
                                   {% endif %}">
                         Seat {{ loop.index }}
                     </div>
-                    {% if loop.index % 2 == 0 %}<div class="aisle"></div>{% endif %}
+                        {% if (loop.index - 2) % 4 == 0 %}<div class="aisle"></div>{% endif %}
                 {% endfor %}
             </div>
         </div>
