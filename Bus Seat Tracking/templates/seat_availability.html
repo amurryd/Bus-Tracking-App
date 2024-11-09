@@ -65,6 +65,12 @@
         width: 70px;
         height: 70px;
     }
+            /* Adjust remaining rows to start from the second row */
+    .bus-seats {
+        grid-row: 2;
+        grid-column: 1 / -1; /* Span all columns */
+        display: contents;
+    }
 
         /* Seat Styling */
         .seat {
@@ -133,27 +139,32 @@
     <div class="seat-monitoring container">
         <h1>Seat Monitoring</h1>
 
-        <!-- Bus Body Container -->
-        <div class="bus-body">
-            <div class="entrance">Entrance</div>  <div class="driver-seat">Driver</div>
-            <!-- Bus Seats Layout (4 rows with an aisle) -->
-            <div class="bus-layout" id="seatGrid">
-                {% for seat, data in seats.items() %}
-                    <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
-                         class="seat {% if data.status == 'Terisi' %}
-                                    {% if data.classification == 'Orang' %}occupied{% endif %}
-                                    {% if data.classification == 'Barang' %}luggage{% endif %}
-                                  {% elif data.status == 'Kosong' %}
-                                    {% if data.classification == 'Barang' %}luggage{% endif %}
-                                    {% if data.classification == 'Balita' %}child{% endif %}
-                                    {% if data.classification == 'N/A' %}available{% endif %}
-                                  {% endif %}">
-                        Seat {{ loop.index }}
-                    </div>
-                        {% if (loop.index - 2) % 4 == 0 %}<div class="aisle"></div>{% endif %}
-                {% endfor %}
-            </div>
+<!-- Updated Bus Body Container -->
+<div class="bus-body">
+    <div class="bus-layout">
+        <!-- Place the entrance and driver seat above the seats in the first row -->
+        <div class="entrance">Entrance</div>
+        <div class="driver-seat">Driver</div>
+
+        <!-- Bus Seats Layout (4 rows with an aisle) -->
+        <div class="bus-seats" id="seatGrid">
+            {% for seat, data in seats.items() %}
+                <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
+                     class="seat {% if data.status == 'Terisi' %}
+                                {% if data.classification == 'Orang' %}occupied{% endif %}
+                                {% if data.classification == 'Barang' %}luggage{% endif %}
+                              {% elif data.status == 'Kosong' %}
+                                {% if data.classification == 'Barang' %}luggage{% endif %}
+                                {% if data.classification == 'Balita' %}child{% endif %}
+                                {% if data.classification == 'N/A' %}available{% endif %}
+                              {% endif %}">
+                    Seat {{ loop.index }}
+                </div>
+                {% if (loop.index - 2) % 4 == 0 %}<div class="aisle"></div>{% endif %}
+            {% endfor %}
         </div>
+    </div>
+</div>
 
         <!-- Passenger Count -->
         <div class="passenger-count" id="passengerCount">{{ passenger_count }} Passengers on The Bus</div>
