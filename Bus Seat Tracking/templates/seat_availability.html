@@ -19,17 +19,26 @@
         .seat-monitoring { padding: 2rem 1rem; text-align: center; }
         .seat-monitoring h1 { font-size: 2rem; font-weight: bold; color: #001f3f; margin-bottom: 1rem; }
 
-        /* Seat Grid */
-        .seat-grid { 
+        /* Bus Layout Styling */
+        .bus-layout {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr); /* Two seats, aisle, two seats */
             gap: 0.8rem;
             justify-items: center;
             margin-top: 1rem;
         }
+        .driver-seat {
+            grid-column: span 5;
+            background-color: #001f3f;
+            color: #fff;
+            font-weight: bold;
+            padding: 0.8rem;
+            border-radius: 8px;
+            text-align: center;
+        }
 
         /* Seat Styling */
-        .seat { 
+        .seat {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -43,6 +52,9 @@
             min-height: 70px;
             box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
             margin: 0;
+        }
+        .aisle {
+            background-color: #f4f4f9; /* Same as background */
         }
 
         /* Seat Status Colors */
@@ -93,8 +105,12 @@
     <div class="seat-monitoring container">
         <h1>Seat Monitoring</h1>
 
-        <!-- Seat Grid -->
-        <div class="seat-grid" id="seatGrid">
+        <!-- Bus Layout -->
+        <div class="bus-layout" id="seatGrid">
+            <!-- Driver's seat -->
+            <div class="driver-seat">Driver</div>
+
+            <!-- Bus Seats Layout (4 rows with an aisle) -->
             {% for seat, data in seats.items() %}
                 <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
                      class="seat {% if data.status == 'Terisi' %}
@@ -107,6 +123,7 @@
                               {% endif %}">
                     Seat {{ loop.index }}
                 </div>
+                {% if loop.index % 2 == 0 %}<div class="aisle"></div>{% endif %}
             {% endfor %}
         </div>
 
@@ -148,7 +165,7 @@
 
     // Listen for update_data event from the server
     socket.on('update_data', function (data) {
-        console.clear();  // Clear console for each new update for clarity
+        console.clear();
         console.log("Received update_data:", data);
         const seatData = data.seats;
 
@@ -156,7 +173,6 @@
         for (const [seatId, seatInfo] of Object.entries(seatData)) {
             const seatElement = document.getElementById(seatId);
             if (seatElement) {
-                // Clear existing status classes before adding new ones
                 seatElement.classList.remove('occupied', 'child', 'luggage', 'available');
                 
                 // Determine and add appropriate class based on seat info
@@ -178,7 +194,6 @@
         }
     });
 </script>
-
 
 <script async src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
