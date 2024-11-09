@@ -19,13 +19,23 @@
         .seat-monitoring { padding: 2rem 1rem; text-align: center; }
         .seat-monitoring h1 { font-size: 2rem; font-weight: bold; color: #001f3f; margin-bottom: 1rem; }
 
+        /* Bus Body Styling */
+        .bus-body {
+            background-color: #e0e0e0;
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            width: fit-content;
+            margin: auto;
+            margin-top: 1.5rem;
+        }
+
         /* Bus Layout Styling */
         .bus-layout {
             display: grid;
             grid-template-columns: repeat(5, 1fr); /* Two seats, aisle, two seats */
             gap: 0.8rem;
             justify-items: center;
-            margin-top: 1rem;
         }
         .driver-seat {
             grid-column: span 5;
@@ -35,6 +45,7 @@
             padding: 0.8rem;
             border-radius: 8px;
             text-align: center;
+            margin-bottom: 1rem;
         }
 
         /* Seat Styling */
@@ -51,7 +62,6 @@
             min-width: 70px;
             min-height: 70px;
             box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-            margin: 0;
         }
         .aisle {
             background-color: #f4f4f9; /* Same as background */
@@ -105,26 +115,28 @@
     <div class="seat-monitoring container">
         <h1>Seat Monitoring</h1>
 
-        <!-- Bus Layout -->
-        <div class="bus-layout" id="seatGrid">
+        <!-- Bus Body Container -->
+        <div class="bus-body">
             <!-- Driver's seat -->
             <div class="driver-seat">Driver</div>
 
             <!-- Bus Seats Layout (4 rows with an aisle) -->
-            {% for seat, data in seats.items() %}
-                <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
-                     class="seat {% if data.status == 'Terisi' %}
-                                {% if data.classification == 'Orang' %}occupied{% endif %}
-                                {% if data.classification == 'Barang' %}luggage{% endif %}
-                              {% elif data.status == 'Kosong' %}
-                                {% if data.classification == 'Barang' %}luggage{% endif %}
-                                {% if data.classification == 'Balita' %}child{% endif %}
-                                {% if data.classification == 'N/A' %}available{% endif %}
-                              {% endif %}">
-                    Seat {{ loop.index }}
-                </div>
-                {% if loop.index % 2 == 0 %}<div class="aisle"></div>{% endif %}
-            {% endfor %}
+            <div class="bus-layout" id="seatGrid">
+                {% for seat, data in seats.items() %}
+                    <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
+                         class="seat {% if data.status == 'Terisi' %}
+                                    {% if data.classification == 'Orang' %}occupied{% endif %}
+                                    {% if data.classification == 'Barang' %}luggage{% endif %}
+                                  {% elif data.status == 'Kosong' %}
+                                    {% if data.classification == 'Barang' %}luggage{% endif %}
+                                    {% if data.classification == 'Balita' %}child{% endif %}
+                                    {% if data.classification == 'N/A' %}available{% endif %}
+                                  {% endif %}">
+                        Seat {{ loop.index }}
+                    </div>
+                    {% if loop.index % 2 == 0 %}<div class="aisle"></div>{% endif %}
+                {% endfor %}
+            </div>
         </div>
 
         <!-- Passenger Count -->
