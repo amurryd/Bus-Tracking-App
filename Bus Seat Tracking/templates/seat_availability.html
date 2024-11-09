@@ -86,6 +86,11 @@
             margin: auto;
             margin-top: 1.5rem;
             }
+            .bus-seats {
+            display: flex;
+            justify-content: space-between; /* Entrance on left, driver seat on right */
+            align-items: center;
+            }
             /* Bus Layout Styling */
             .bus-layout {
             display: grid;
@@ -156,9 +161,9 @@
             <div class="bus-body">
                 <div class="bus-seats" id="seatGrid">
                     <!-- Driver Seat and Entrance at the front of the bus -->
-                    <div class="driver-seat" id="driverSeat">Driver</div>
                     <div class="entrance">Entrance</div>
                     <!-- Aisle and Seats Layout -->
+                    <div class="driver-seat" id="driverSeat">Driver</div>
                     <div class="bus-layout">
                         {% for seat, data in seats.items() %}
                         <div id="{{ seat }}" aria-label="Seat {{ loop.index }}"
