@@ -37,26 +37,30 @@
             gap: 0.8rem;
             justify-items: center;
         }
-        .driver-seat {
-            grid-column: span 1;
-            background-color: #001f3f;
-            color: #fff;
-            font-weight: bold;
-            padding: 0.8rem;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-        .entrance{
-            grid-column: span 1;
-            background-color: #001f3f;
-            color: #fff;
-            font-weight: bold;
-            padding: 0.8rem;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 1rem;
-        }
+     /* Driver and Entrance Placement */
+    .driver-seat {
+        grid-row: 1;
+        grid-column: 4; /* Aligns above the 4th seat */
+        background-color: #001f3f;
+        color: #fff;
+        font-weight: bold;
+        padding: 0.5rem; /* Smaller padding */
+        border-radius: 8px;
+        text-align: center;
+        font-size: 0.8rem; /* Smaller font size */
+    }
+
+    .entrance {
+        grid-row: 1;
+        grid-column: 1; /* Aligns above the 1st seat */
+        background-color: #4caf50; /* Green color */
+        color: #fff;
+        font-weight: bold;
+        padding: 0.5rem; /* Smaller padding */
+        border-radius: 8px;
+        text-align: center;
+        font-size: 0.8rem; /* Smaller font size */
+    }
 
         /* Seat Styling */
         .seat {
