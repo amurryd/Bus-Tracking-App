@@ -62,25 +62,28 @@
             top: -20px;
             right: -50px;
         }
-        /* Video Styling */
-        .video-container {
-            margin-top: 2rem;
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
-            overflow: hidden;
-            max-width: 100%;
-            background-color: #000;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-        .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
+       /* Video Styling - Smaller Frame */
+    .video-container {
+        margin-top: 2rem;
+        position: relative;
+        padding-bottom: 50%; /* Adjust aspect ratio */
+        width: 60%; /* Set width to 60% of the container */
+        max-width: 480px; /* Max width to keep it from getting too large */
+        height: 0;
+        overflow: hidden;
+        background-color: #000;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        margin-left: auto;
+        margin-right: auto; /* Center the video */
+    }
+    .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
 
 
         /* Mobile Specific Adjustments */
@@ -153,6 +156,7 @@
             <div class="circle-overlay blue"></div>
         </div>
         
+         <!-- YouTube Video Embed - Smaller Size -->
         <div class="video-container mt-4">
             <iframe 
                 src="https://www.youtube.com/embed/MpzEGLoIcog" 
